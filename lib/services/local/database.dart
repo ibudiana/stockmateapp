@@ -35,6 +35,19 @@ class DatabaseService {
   // CREATE TABLES
   Future<void> _createTables(Database db) async {
     // TABLE ITEMS
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        profile_picture_url TEXT,
+        role TEXT NOT NULL CHECK (role IN ('admin', 'stockManager', 'kasir')),
+        password TEXT NOT NULL,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
   }
 
   // SEED INITIAL DATA

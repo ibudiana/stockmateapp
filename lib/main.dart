@@ -1,40 +1,16 @@
-import 'package:flutter/material.dart';
-import 'utils/theme/app_theme.dart';
-
-// Firebase
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:stockmateapp/app.dart';
+import 'package:stockmateapp/firebase_options.dart';
+import 'package:stockmateapp/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ); // Inisialisasi Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(const StockMateApp());
-}
-
-class StockMateApp extends StatelessWidget {
-  const StockMateApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'StockMate',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const SplashScreen(),
-    );
-  }
-}
-
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('StockMate')));
-  }
+  runApp(
+    MultiProvider(providers: AppProviders.providers(), child: StockMateApp()),
+  );
 }
