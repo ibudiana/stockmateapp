@@ -7,6 +7,7 @@ class AuthViewModel extends ChangeNotifier {
   // Pasang Form di sini
   final loginForm = LoginForm();
   final registerForm = RegisterForm();
+  final resetPasswordForm = ResetPasswordForm();
 
   AuthViewModel({required this.repository});
 
@@ -99,6 +100,30 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  //  --- FUNGSI RESET PASSWORD ---
+  Future<void> resetPassword() async {
+    if (!resetPasswordForm.validate(_showError)) return;
+
+    _setState(_state.copyWith(status: AuthStatus.loading, message: null));
+
+    try {
+      await repository.resetPassword(
+        resetPasswordForm.emailController.text.trim(),
+      );
+      _setState(
+        _state.copyWith(
+          status: AuthStatus.success,
+          message: "Instruksi reset password telah dikirim ke email Anda.",
+        ),
+      );
+    } catch (e) {
+      final errorMessage = e.toString().replaceAll("Exception: ", "");
+      _setState(
+        _state.copyWith(status: AuthStatus.error, message: errorMessage),
+      );
+    }
+  }
+
   void resetState() {
     _setState(const AuthState());
   }
@@ -107,6 +132,7 @@ class AuthViewModel extends ChangeNotifier {
   void dispose() {
     loginForm.dispose();
     registerForm.dispose();
+    resetPasswordForm.dispose();
     super.dispose();
   }
 }

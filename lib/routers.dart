@@ -13,6 +13,10 @@ class AppRouter {
         path: '/auth/login',
         builder: (context, state) => const LoginScreen(),
       ),
+      GoRoute(
+        path: '/auth/reset-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
     ],
   );
 }

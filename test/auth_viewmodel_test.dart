@@ -8,6 +8,7 @@ import 'package:stockmateapp/viewmodels/auth/auth.dart';
 class FakeAuthRepository implements AuthRepositoryImpl {
   bool shouldFail = false;
   bool shouldLoginFail = false;
+  bool shouldResetPasswordFail = false;
 
   @override
   Future<UserModel> registerAndSync(
@@ -40,8 +41,28 @@ class FakeAuthRepository implements AuthRepositoryImpl {
 
   @override
   Future<UserModel> login(String email, String password) {
-    // TODO: implement login
-    throw UnimplementedError();
+    if (shouldLoginFail) {
+      throw Exception("Email atau password salah");
+    }
+
+    return Future.value(
+      UserModel(
+        id: "12345",
+        name: "Budi",
+        email: email,
+        username: "budi123",
+        password: password,
+        role: UserRole.admin,
+      ),
+    );
+  }
+
+  @override
+  Future<void> resetPassword(String email) {
+    if (shouldResetPasswordFail) {
+      throw Exception("Gagal mengirim instruksi reset password");
+    }
+    return Future.value();
   }
 }
 

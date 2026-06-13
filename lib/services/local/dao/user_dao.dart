@@ -50,4 +50,15 @@ class UserDao {
     }
     return null;
   }
+
+  // update password
+  Future<int> updatePassword(String email, String newPassword) async {
+    final db = await _dbService.database;
+    return await db.update(
+      'users',
+      {'password': newPassword, 'updated_at': DateTime.now().toIso8601String()},
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
 }

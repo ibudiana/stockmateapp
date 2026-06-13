@@ -82,7 +82,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             AppButton.link(
                               text: 'Lupa password?',
-                              onPressed: () {}, // Implementasi lupa password
+                              onPressed: () {
+                                context.go('/auth/reset-password');
+                              }, // Implementasi lupa password
                             ),
                           ],
                         ),

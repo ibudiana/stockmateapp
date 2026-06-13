@@ -12,6 +12,10 @@ class RegisterForm {
       onError("Nama tidak boleh kosong.");
       return false;
     }
+    if (emailController.text.trim().isEmpty) {
+      onError("Email tidak boleh kosong.");
+      return false;
+    }
     if (!RegExp(
       r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$',
     ).hasMatch(emailController.text.trim())) {

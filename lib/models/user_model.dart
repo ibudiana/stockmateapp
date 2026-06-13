@@ -24,6 +24,30 @@ class UserModel {
   }) : createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? username,
+    String? email,
+    String? password,
+    String? profilePictureUrl,
+    UserRole? role,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      role: role ?? this.role,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

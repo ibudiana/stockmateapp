@@ -135,5 +135,29 @@ void main() {
         expect(result.password, 'siti_password');
       },
     );
+
+    // --- 6. TEST UPDATE PASSWORD ---
+    test('Can update password user di SQLite', () async {
+      // Arrange: Masukkan data user ke database terlebih dahulu
+      final user = UserModel(
+        id: '123458',
+        name: 'Agus Salim',
+        username: 'admin_agus',
+        password: 'old_password',
+        email: 'agus@stockmate.com',
+        role: UserRole.admin,
+      );
+      await dao.insertUser(user);
+
+      // Act: Eksekusi fungsi updatePassword
+      await dao.updatePassword('agus@stockmate.com', 'new_password');
+
+      // Assert: Ambil kembali data dari SQLite dan pastikan password sudah berubah
+      final updatedUser = await dao.getUserByEmail('agus@stockmate.com');
+
+      expect(updatedUser, isNotNull);
+      expect(updatedUser!.email, 'agus@stockmate.com');
+      expect(updatedUser.password, 'new_password');
+    });
   });
 }

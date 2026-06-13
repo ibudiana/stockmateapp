@@ -11,6 +11,7 @@ abstract class AuthRepository {
   );
 
   Future<UserModel> login(String email, String password);
+  Future<void> resetPassword(String email);
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -58,7 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  // Login hanya memverifikasi data secara lokal, tanpa berinteraksi dengan Firebase Auth
+  // Login lokal dulu, kalau gagal baru coba ke Firebase (hybrid approach)
   Future<UserModel> login(String email, String password) async {
     final user = await userDao.getUserByEmail(email);
 
@@ -66,12 +67,37 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception('Email tidak ditemukan.');
     }
 
-    // 2. Verifikasi kata sandi secara lokal
-    if (user.password != password) {
+    // 1. SKENARIO NORMAL: Password Lokal Benar
+    if (user.password == password) {
+      return user;
+    }
+
+    // 2. SKENARIO HYBRID: Password Lokal Beda (Mungkin baru reset via Firebase)
+    try {
+      final firebaseUser = await firebaseService.loginWithEmail(
+        email,
+        password,
+      );
+
+      if (firebaseUser != null) {
+        await userDao.updatePassword(email, password);
+        return user.copyWith(password: password);
+      }
+    } catch (e) {
       throw Exception('Email / Password salah.');
     }
 
-    // 3. Login sukses, kembalikan data pengguna
-    return user;
+    throw Exception('Email / Password salah.');
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    final localUser = await userDao.getUserByEmail(email);
+
+    if (localUser == null) {
+      throw Exception("Email tidak terdaftar.");
+    }
+
+    await firebaseService.resetPassword(email);
   }
 }
