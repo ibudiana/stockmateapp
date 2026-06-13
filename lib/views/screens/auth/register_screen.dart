@@ -85,7 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AppTextInput.text(
                       label: 'Nama Lengkap',
                       hint: 'Contoh: Budi Santoso',
-                      controller: viewModel.nameController,
+                      controller: viewModel.registerForm.nameController,
                       prefixIcon: Icons.person_outline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -99,7 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AppTextInput.text(
                       label: 'Username',
                       hint: 'admin',
-                      controller: viewModel.usernameController,
+                      controller: viewModel.registerForm.usernameController,
                       prefixIcon: Icons.account_circle_outlined,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -116,7 +116,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AppTextInput.email(
                       label: 'Email',
                       hint: 'admin@example.com',
-                      controller: viewModel.emailController,
+                      controller: viewModel.registerForm.emailController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Email tidak boleh kosong';
@@ -135,7 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AppTextInput.password(
                       label: 'Password',
                       hint: '••••••••',
-                      controller: viewModel.passwordController,
+                      controller: viewModel.registerForm.passwordController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Password tidak boleh kosong';
@@ -151,13 +151,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AppTextInput.password(
                       label: 'Konfirmasi Password',
                       hint: '••••••••',
-                      controller: viewModel.confirmPasswordController,
+                      controller:
+                          viewModel.registerForm.confirmPasswordController,
                       prefixIcon: Icons.lock_clock_outlined,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Konfirmasi password tidak boleh kosong';
                         }
-                        if (value != viewModel.passwordController.text) {
+                        if (value !=
+                            viewModel.registerForm.passwordController.text) {
                           return 'Password tidak cocok';
                         }
                         return null;
@@ -257,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           );
 
                           // Lanjutkan navigasi
-                          // Navigator.pushReplacementNamed(context, '/home');
+                          context.go('/auth/login');
                         }
 
                         // Opsional: Handle Error menggunakan Global Snackbar jika belum di-handle di ViewModel
@@ -288,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         AppButton.link(
                           text: 'Masuk di sini',
                           onPressed: () {
-                            // Navigator.pushReplacementNamed(context, '/login');
+                            context.go('/auth/login');
                           },
                         ),
                       ],

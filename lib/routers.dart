@@ -3,11 +3,15 @@ import 'package:stockmateapp/views/screens/screens.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/auth/register',
+    initialLocation: '/auth/login',
     routes: [
       GoRoute(
         path: '/auth/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/auth/login',
+        builder: (context, state) => const LoginScreen(),
       ),
     ],
   );

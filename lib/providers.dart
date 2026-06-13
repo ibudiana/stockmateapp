@@ -7,7 +7,7 @@ import 'package:stockmateapp/services/remote/firebase_auth_service.dart';
 
 import 'package:stockmateapp/repositories/auth_repository.dart';
 
-import 'package:stockmateapp/viewmodels/auth_viewmodel.dart';
+import 'package:stockmateapp/viewmodels/auth/auth.dart';
 
 class AppProviders {
   static List<SingleChildWidget> providers() {

@@ -9,6 +9,8 @@ abstract class AuthRepository {
     String email,
     String password,
   );
+
+  Future<UserModel> login(String email, String password);
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -52,6 +54,24 @@ class AuthRepositoryImpl implements AuthRepository {
     // 3. Sinkronisasi (Simpan) ke SQLite lokal via DAO
     await userDao.insertUser(user);
 
+    return user;
+  }
+
+  @override
+  // Login hanya memverifikasi data secara lokal, tanpa berinteraksi dengan Firebase Auth
+  Future<UserModel> login(String email, String password) async {
+    final user = await userDao.getUserByEmail(email);
+
+    if (user == null) {
+      throw Exception('Email tidak ditemukan.');
+    }
+
+    // 2. Verifikasi kata sandi secara lokal
+    if (user.password != password) {
+      throw Exception('Email / Password salah.');
+    }
+
+    // 3. Login sukses, kembalikan data pengguna
     return user;
   }
 }

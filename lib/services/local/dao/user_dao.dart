@@ -36,4 +36,18 @@ class UserDao {
     );
     return result.isNotEmpty;
   }
+
+  Future<dynamic> getUserByEmail(String email) async {
+    final db = await _dbService.database;
+    final result = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      return UserModel.fromMap(result.first);
+    }
+    return null;
+  }
 }

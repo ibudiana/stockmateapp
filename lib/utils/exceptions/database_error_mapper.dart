@@ -14,6 +14,11 @@ class DatabaseErrorMapper {
       return 'Username sudah digunakan.';
     }
 
+    if (msg.contains('email tidak ditemukan') ||
+        msg.contains('email / password salah')) {
+      return 'Email / Password salah.';
+    }
+
     if (msg.contains('unique') && msg.contains('email')) {
       return 'Email sudah terdaftar di database lokal.';
     }
