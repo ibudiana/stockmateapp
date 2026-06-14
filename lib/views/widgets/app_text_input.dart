@@ -8,8 +8,14 @@ class AppTextInput extends StatefulWidget {
   final TextEditingController controller;
   final TextInputVariant variant;
   final IconData? prefixIcon;
-  final FormFieldValidator<String>? validator; // Tambahkan ini
-  final ValueChanged<String>? onChanged; // Tambahkan ini
+  final FormFieldValidator<String>? validator;
+  final ValueChanged<String>? onChanged;
+
+  // --- TAMBAHAN PROPERTI BARU ---
+  final TextInputType? keyboardType;
+  final String? suffixText;
+  final Widget? suffixIcon;
+  final int maxLines;
 
   const AppTextInput._({
     required this.label,
@@ -19,6 +25,10 @@ class AppTextInput extends StatefulWidget {
     this.prefixIcon,
     this.validator,
     this.onChanged,
+    this.keyboardType,
+    this.suffixText,
+    this.suffixIcon,
+    this.maxLines = 1, // Default 1 baris
   });
 
   factory AppTextInput.text({
@@ -28,6 +38,10 @@ class AppTextInput extends StatefulWidget {
     IconData? prefixIcon,
     FormFieldValidator<String>? validator,
     ValueChanged<String>? onChanged,
+    TextInputType? keyboardType,
+    String? suffixText,
+    Widget? suffixIcon,
+    int maxLines = 1,
   }) {
     return AppTextInput._(
       label: label,
@@ -37,6 +51,10 @@ class AppTextInput extends StatefulWidget {
       prefixIcon: prefixIcon,
       validator: validator,
       onChanged: onChanged,
+      keyboardType: keyboardType,
+      suffixText: suffixText,
+      suffixIcon: suffixIcon,
+      maxLines: maxLines,
     );
   }
 
@@ -55,6 +73,7 @@ class AppTextInput extends StatefulWidget {
       prefixIcon: Icons.email_outlined,
       validator: validator,
       onChanged: onChanged,
+      keyboardType: TextInputType.emailAddress,
     );
   }
 
@@ -105,17 +124,25 @@ class _AppTextInputState extends State<AppTextInput> {
           ),
         ),
         const SizedBox(height: AppSpacing.s),
-
         TextFormField(
           controller: widget.controller,
           obscureText: _isObscured,
-          validator: widget.validator, // Masukkan validator
-          onChanged: widget.onChanged, // Trigger saat diketik
-          autovalidateMode:
-              AutovalidateMode.onUserInteraction, // Fitur "On Type" validation
-          keyboardType: widget.variant == TextInputVariant.email
-              ? TextInputType.emailAddress
-              : TextInputType.text,
+          validator: widget.validator,
+          onChanged: widget.onChanged,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+
+          // Gunakan custom keyboardType jika ada, jika tidak fallback ke variant
+          keyboardType:
+              widget.keyboardType ??
+              (widget.variant == TextInputVariant.email
+                  ? TextInputType.emailAddress
+                  : TextInputType.text),
+
+          // Terapkan maxLines (password harus selalu 1 baris)
+          maxLines: widget.variant == TextInputVariant.password
+              ? 1
+              : widget.maxLines,
+
           style: AppTypography.textMRegular.copyWith(
             color: colors.contentPrimary,
           ),
@@ -131,6 +158,8 @@ class _AppTextInputState extends State<AppTextInput> {
                     size: 22,
                   )
                 : null,
+
+            // Menangani Suffix Icon (Visibility Toggle / Custom Icon)
             suffixIcon: widget.variant == TextInputVariant.password
                 ? IconButton(
                     icon: Icon(
@@ -144,14 +173,20 @@ class _AppTextInputState extends State<AppTextInput> {
                       });
                     },
                   )
-                : null,
+                : widget.suffixIcon,
+
+            // Menambahkan Suffix Text (misal: "kg")
+            suffixText: widget.suffixText,
+            suffixStyle: AppTypography.textMRegular.copyWith(
+              color: colors.contentSecondary,
+            ),
+
             filled: true,
             fillColor: colors.contentTertiary,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.l,
               vertical: AppSpacing.m,
             ),
-            // Styling borders tetap sama
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.s),
               borderSide: BorderSide(
@@ -181,7 +216,6 @@ class _AppTextInputState extends State<AppTextInput> {
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              // Tambahan agar error saat difokuskan tetap merah
               borderRadius: BorderRadius.circular(AppRadius.s),
               borderSide: BorderSide(
                 color: colors.borderNegative,

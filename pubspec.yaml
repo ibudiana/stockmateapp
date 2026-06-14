@@ -47,6 +47,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^4.10.0
   firebase_auth: ^6.5.2
+  uuid: ^4.5.3
+  path_provider: ^2.1.5
 
 dev_dependencies:
   integration_test:
@@ -61,6 +63,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  mocktail: ^1.0.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

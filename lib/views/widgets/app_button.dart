@@ -38,6 +38,23 @@ class AppButton extends StatelessWidget {
     );
   }
 
+  factory AppButton.secondary({
+    required String text,
+    VoidCallback? onPressed,
+    bool isLoading = false,
+    IconData? icon,
+    bool isFullWidth = false,
+  }) {
+    return AppButton._(
+      text: text,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      variant: AppButtonVariant.outline,
+      icon: icon,
+      isFullWidth: isFullWidth,
+    );
+  }
+
   factory AppButton.outline({
     required String text,
     VoidCallback? onPressed,

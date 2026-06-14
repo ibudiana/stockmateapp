@@ -34,7 +34,7 @@ class DatabaseService {
 
   // CREATE TABLES
   Future<void> _createTables(Database db) async {
-    // TABLE ITEMS
+    // TABLE USERS
     await db.execute('''
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -46,6 +46,36 @@ class DatabaseService {
         password TEXT NOT NULL,
         created_at TEXT,
         updated_at TEXT
+      )
+    ''');
+    // TABLE PRODUCTS
+    await db.execute('''
+      CREATE TABLE products (
+        id TEXT PRIMARY KEY,
+        sku TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        unit TEXT NOT NULL,
+        min_stock REAL NOT NULL,
+        current_stock REAL NOT NULL DEFAULT 0,
+        notes TEXT,
+        image_path TEXT,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    // TABLE STOCK TRANSACTIONS
+    await db.execute('''
+      CREATE TABLE stock_transactions (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        remaining_quantity REAL NOT NULL,
+        expiry_date TEXT,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
       )
     ''');
   }
