@@ -144,10 +144,41 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                             label: 'SKU (Stock Keeping Unit)',
                             hint: 'CTH: BRS-001',
                             controller: viewModel.productForm.skuController,
-                            // Lock icon jika mode edit (SKU sebaiknya tidak diubah jika sudah ada transaksi)
+                            // Jika edit = Gembok. Jika tambah baru = Tombol Scan Barcode
                             suffixIcon: _isEdit
                                 ? const Icon(Icons.lock_outline, size: 20)
-                                : null,
+                                : IconButton(
+                                    icon: Icon(
+                                      Icons.qr_code_scanner,
+                                      color: colors
+                                          .contentBrand, // Warna biru/utama
+                                      size: 24,
+                                    ),
+                                    onPressed: () async {
+                                      // Buka layar kamera bawaan package
+                                      final res = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              // ignore: deprecated_member_use
+                                              const SimpleBarcodeScannerPage(),
+                                        ),
+                                      );
+
+                                      // Jika user berhasil memindai barcode (tidak menekan tombol cancel/-1)
+                                      if (res is String && res != '-1') {
+                                        // Otomatis isi teks SKU dengan hasil scan
+                                        viewModel
+                                                .productForm
+                                                .skuController
+                                                .text =
+                                            res;
+
+                                        // Jika ada validasi/rebuild yang diperlukan
+                                        setState(() {});
+                                      }
+                                    },
+                                  ),
                             validator: (v) =>
                                 v!.isEmpty ? 'SKU wajib diisi' : null,
                           ),
