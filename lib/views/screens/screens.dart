@@ -11,9 +11,12 @@ import 'package:stockmateapp/viewmodels/auth/auth.dart';
 import 'package:stockmateapp/utils/theme/app_colors.dart';
 import 'package:stockmateapp/utils/theme/app_typography.dart';
 import 'package:stockmateapp/utils/theme/app_dimensions.dart';
+import 'package:stockmateapp/viewmodels/dashboard_viewmodel.dart';
+import 'package:stockmateapp/viewmodels/notification_viewmodel.dart';
 import 'package:stockmateapp/viewmodels/product_viewmodel.dart';
 import 'package:stockmateapp/viewmodels/report_viewmodel.dart';
 import 'package:stockmateapp/views/widgets/widgets.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 part 'auth/register_screen.dart';
 part 'auth/login_screen.dart';
@@ -22,3 +25,5 @@ part 'product/product_list_screen.dart';
 part 'product/stock_adjustment_dialog.dart';
 part 'product/product_form_screen.dart';
 part 'report/report_screen.dart';
+part 'home/home_screen.dart';
+part 'home/notification_screen.dart';

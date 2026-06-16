@@ -4,7 +4,7 @@ import 'package:stockmateapp/views/screens/screens.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/reports',
+    initialLocation: '/home',
     routes: [
       // --- AUTH ROUTES ---
       GoRoute(
@@ -18,6 +18,12 @@ class AppRouter {
       GoRoute(
         path: '/auth/reset-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationScreen(),
       ),
 
       // --- PRODUCT ROUTES ---

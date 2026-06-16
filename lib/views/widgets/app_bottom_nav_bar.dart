@@ -12,7 +12,9 @@ class AppBottomNavBar extends StatelessWidget {
     // Sesuaikan rute ini dengan konfigurasi AppRouter Anda
     switch (index) {
       case 0:
-        // context.go('/home'); // Rute Home
+        context.read<DashboardViewModel>().loadDashboardData();
+        context.read<NotificationViewModel>().generateNotifications();
+        context.go('/home'); // Rute Home
         break;
       case 1:
         context.go('/products'); // Rute Item / Produk

@@ -12,8 +12,11 @@ import 'package:stockmateapp/repositories/auth_repository.dart';
 import 'package:stockmateapp/repositories/product_repository.dart';
 
 import 'package:stockmateapp/viewmodels/auth/auth.dart';
+import 'package:stockmateapp/viewmodels/dashboard_viewmodel.dart';
+import 'package:stockmateapp/viewmodels/notification_viewmodel.dart';
 import 'package:stockmateapp/viewmodels/product_viewmodel.dart';
 import 'package:stockmateapp/viewmodels/report_viewmodel.dart';
+import 'package:stockmateapp/viewmodels/settings_viewmodel.dart';
 
 class AppProviders {
   static List<SingleChildWidget> providers() {
@@ -59,6 +62,22 @@ class AppProviders {
       ChangeNotifierProvider<ReportViewModel>(
         create: (context) =>
             ReportViewModel(repository: context.read<ReportRepository>()),
+      ),
+      ChangeNotifierProvider<DashboardViewModel>(
+        create: (context) => DashboardViewModel(
+          productRepo: context.read<ProductRepository>(),
+          reportRepo: context.read<ReportRepository>(),
+        ),
+      ),
+      ChangeNotifierProvider<SettingsViewModel>(
+        create: (context) => SettingsViewModel(),
+      ),
+      ChangeNotifierProvider<NotificationViewModel>(
+        create: (context) => NotificationViewModel(
+          productRepo: context.read<ProductRepository>(),
+          reportRepo: context.read<ReportRepository>(),
+          settings: context.read<SettingsViewModel>(),
+        ),
       ),
     ];
   }
