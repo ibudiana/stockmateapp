@@ -222,7 +222,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           _oldPasswordCtrl.clear();
                           _newPasswordCtrl.clear();
                           _confirmPasswordCtrl.clear();
-                          Navigator.pop(context);
+                          context.go("/settings");
                         } else if (context.mounted) {
                           AppSnackbar.showError(
                             context,

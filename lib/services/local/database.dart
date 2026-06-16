@@ -42,6 +42,7 @@ class DatabaseService {
         username TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         profile_picture_url TEXT,
+        phone TEXT,
         role TEXT NOT NULL CHECK (role IN ('admin', 'stockManager', 'kasir')),
         password TEXT NOT NULL,
         created_at TEXT,

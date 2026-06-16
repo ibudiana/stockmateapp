@@ -4,6 +4,7 @@ class EditProfileForm {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
+  String? imagePath;
 
   bool validate(Function(String) onError) {
     if (nameController.text.trim().isEmpty) {
@@ -33,5 +34,6 @@ class EditProfileForm {
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
+    imagePath = null;
   }
 }

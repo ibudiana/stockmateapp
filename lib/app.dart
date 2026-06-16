@@ -13,7 +13,7 @@ class StockMateApp extends StatelessWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.router,
+      routerConfig: AppRouter.createRouter(context),
       title: 'StockMate',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

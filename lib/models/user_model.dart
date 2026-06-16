@@ -1,12 +1,13 @@
 enum UserRole { admin, stockManager, kasir }
 
 class UserModel {
-  final String id; // Berasal dari Firebase Auth UID
+  final String id;
   final String name;
   final String username;
   final String email;
   final String password;
   final String? profilePictureUrl;
+  final String? phone;
   final UserRole role;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -18,6 +19,7 @@ class UserModel {
     required this.email,
     required this.password,
     this.profilePictureUrl,
+    this.phone,
     required this.role,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -31,6 +33,7 @@ class UserModel {
     String? email,
     String? password,
     String? profilePictureUrl,
+    String? phone, // <--- 3. TAMBAHKAN DI SINI
     UserRole? role,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -42,6 +45,7 @@ class UserModel {
       email: email ?? this.email,
       password: password ?? this.password,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      phone: phone ?? this.phone,
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -56,6 +60,7 @@ class UserModel {
       'email': email,
       'password': password,
       'profile_picture_url': profilePictureUrl,
+      'phone': phone,
       'role': role.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -72,11 +77,11 @@ class UserModel {
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
       profilePictureUrl: map['profile_picture_url'] as String?,
+      phone: map['phone'] as String?,
       role: UserRole.values.firstWhere(
         (e) => e.name == map['role'],
-        orElse: () =>
-            UserRole.admin, // Fallback agar tidak crash jika data corrupt
-      ), // Default ke admin jika tidak ada role yang diberikan
+        orElse: () => UserRole.admin,
+      ),
     );
   }
 }

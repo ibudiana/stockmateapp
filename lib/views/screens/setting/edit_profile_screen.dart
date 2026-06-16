@@ -11,7 +11,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late EditProfileForm _form;
 
-  // Controller lokal khusus untuk field Read-Only
   final _roleCtrl = TextEditingController();
 
   @override
@@ -20,31 +19,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final authVM = context.read<AuthViewModel>();
     _form = authVM.editProfileForm;
 
-    // Isi kolom input dengan data pengguna yang sedang login
     final currentUser = authVM.state.user;
     if (currentUser != null) {
       _form.nameController.text = currentUser.name;
       _form.emailController.text = currentUser.email;
-
-      // Ambil role dari UserModel (sesuaikan jika logic penamaan role Anda berbeda)
+      _form.phoneController.text = currentUser.phone ?? '';
       _roleCtrl.text = currentUser.role.name.toUpperCase();
-
-      // Jika nomor telepon tersimpan di UserModel, isi di sini
-      // _form.phoneController.text = currentUser.phone ?? '';
+      _form.imagePath = currentUser.profilePictureUrl;
     }
   }
 
   void _submitForm() async {
-    // 1. Validasi kerangka UI
     if (!_formKey.currentState!.validate()) return;
 
-    // 2. Validasi Logika Form
     bool isValid = _form.validate((errorMsg) {
       AppSnackbar.showError(context, message: errorMsg);
     });
     if (!isValid) return;
 
-    // 3. Eksekusi ke SQLite via ViewModel
     final authVM = context.read<AuthViewModel>();
     final success = await authVM.updateProfile();
 
@@ -53,7 +45,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         context,
         message: authVM.state.message ?? 'Profil berhasil diperbarui!',
       );
-      Navigator.pop(context); // Kembali ke menu pengaturan
+      Navigator.pop(context);
     } else if (mounted) {
       AppSnackbar.showError(
         context,
@@ -70,6 +62,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Gunakan context.watch agar UI otomatis berubah saat notifyListeners() dipanggil dari pickProfileImage()
     final viewModel = context.watch<AuthViewModel>();
     final colors = Theme.of(context).extension<AppColors>() ?? AppColors.light;
     final isLoading = viewModel.state.status == AuthStatus.loading;
@@ -95,50 +88,74 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             children: [
               const SizedBox(height: AppSpacing.l),
-              // --- FOTO PROFIL ---
+
+              // --- FOTO PROFIL BISA DIKLIK ---
               Center(
                 child: Column(
                   children: [
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: colors.backgroundDisabled,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: colors.borderPrimary),
+                    GestureDetector(
+                      onTap: () async {
+                        // Panggil fungsi buka galeri
+                        await viewModel.pickProfileImage();
+                      },
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: colors.backgroundDisabled,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: colors.borderPrimary),
+
+                              // TAMPILKAN GAMBAR JIKA ADA
+                              image: _form.imagePath != null
+                                  ? DecorationImage(
+                                      image: FileImage(File(_form.imagePath!)),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+
+                            // SEMBUNYIKAN ICON JIKA GAMBAR SUDAH DIPILIH
+                            child: _form.imagePath == null
+                                ? Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: colors.contentSecondary,
+                                  )
+                                : const SizedBox.shrink(),
                           ),
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
-                            color: colors.contentSecondary,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: colors.contentBrand,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: colors.surfaceL0,
-                              width: 2,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colors.contentBrand,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: colors.surfaceL0,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 16,
                             ),
                           ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.m),
-                    Text(
-                      'Ubah Foto',
-                      style: AppTypography.textMSemibold.copyWith(
-                        color: colors.contentBrand,
+
+                    // Tombol teks juga bisa digunakan untuk trigger upload
+                    InkWell(
+                      onTap: () async => await viewModel.pickProfileImage(),
+                      child: Text(
+                        _form.imagePath != null ? 'Ganti Foto' : 'Unggah Foto',
+                        style: AppTypography.textMSemibold.copyWith(
+                          color: colors.contentBrand,
+                        ),
                       ),
                     ),
                   ],
@@ -153,6 +170,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _form.nameController,
               ),
               const SizedBox(height: AppSpacing.l),
+
               AppTextInput.text(
                 label: 'Email',
                 hint: 'Masukkan email',
@@ -160,7 +178,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: AppSpacing.l),
 
-              // Read-only field untuk peran
               AbsorbPointer(
                 child: AppTextInput.text(
                   label: 'Jabatan/Peran',
@@ -184,7 +201,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: AppSpacing.l),
 
-              // Custom Phone Input
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(

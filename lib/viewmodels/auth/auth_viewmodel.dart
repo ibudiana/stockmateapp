@@ -10,7 +10,9 @@ class AuthViewModel extends ChangeNotifier {
   final changePasswordForm = ChangePasswordForm();
   final editProfileForm = EditProfileForm();
 
-  AuthViewModel({required this.repository});
+  AuthViewModel({required this.repository}) {
+    _loadSessionUser();
+  }
 
   AuthState _state = const AuthState();
   AuthState get state => _state;
@@ -25,6 +27,22 @@ class AuthViewModel extends ChangeNotifier {
     _setState(_state.copyWith(status: AuthStatus.error, message: message));
   }
 
+  // --- FUNGSI AUTO LOAD USER ---
+  Future<void> _loadSessionUser() async {
+    if (SessionService.isLoggedInSync) {
+      final userId = SessionService.currentUserId!;
+      try {
+        final users = await repository.getAllUsersLocally();
+        final user = users.firstWhere((u) => u.id == userId);
+        _setState(
+          _state.copyWith(status: AuthStatus.authenticated, user: user),
+        );
+      } catch (e) {
+        resetState(); // Jika user tidak ditemukan di SQLite, bersihkan sesi
+      }
+    }
+  }
+
   // --- FUNGSI LOGIN ---
   Future<void> login() async {
     if (!loginForm.validate(_showError)) return;
@@ -36,6 +54,9 @@ class AuthViewModel extends ChangeNotifier {
         loginForm.emailController.text.trim(),
         loginForm.passwordController.text,
       );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user_id', user.id);
 
       _setState(
         _state.copyWith(
@@ -187,16 +208,14 @@ class AuthViewModel extends ChangeNotifier {
         throw Exception('Tidak ada sesi login aktif. Silakan login ulang.');
       }
 
-      // Salin data user lama, dan timpa dengan data baru dari form
       final updatedUser = currentUser.copyWith(
         name: editProfileForm.nameController.text.trim(),
         email: editProfileForm.emailController.text.trim(),
-        // Jika UserModel Anda memiliki field phone, tambahkan:
-        // phone: editProfileForm.phoneController.text.trim(),
+        phone: editProfileForm.phoneController.text.trim(),
+        profilePictureUrl: editProfileForm.imagePath,
         updatedAt: DateTime.now(),
       );
 
-      // Simpan ke SQLite menggunakan fungsi yang sama seperti ganti password
       await repository.updateUserLocally(updatedUser);
 
       // Perbarui sesi aktif
@@ -217,7 +236,29 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  void resetState() {
+  // --- FUNGSI UBAH FOTO PROFIL ---
+  Future<void> pickProfileImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      // Buka galeri HP pengguna
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        editProfileForm.imagePath = image.path;
+        notifyListeners();
+      }
+    } catch (e) {
+      _setState(
+        _state.copyWith(
+          status: AuthStatus.error,
+          message: "Gagal memuat foto: ${e.toString()}",
+        ),
+      );
+    }
+  }
+
+  Future<void> resetState() async {
+    await SessionService.clearSession();
     _setState(const AuthState());
   }
 

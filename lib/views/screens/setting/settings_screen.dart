@@ -3,6 +3,13 @@ part of 'package:stockmateapp/views/screens/screens.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  String _getInitials(String name) {
+    List<String> names = name.trim().split(" ");
+    if (names.isEmpty) return "U"; // Default 'User'
+    if (names.length == 1) return names[0][0].toUpperCase();
+    return "${names[0][0]}${names[1][0]}".toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SettingsViewModel>();
@@ -76,13 +83,13 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // --- TOMBOL LOGOUT ---
+            // --- LOGOUT ---
             AppButton.secondary(
               text: 'Keluar dari Akun',
               icon: Icons.logout,
               isFullWidth: true,
               onPressed: () {
-                context.go('/auth/login');
+                context.read<AuthViewModel>().resetState();
               },
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -96,6 +103,10 @@ class SettingsScreen extends StatelessWidget {
 
   // --- HELPER WIDGETS ---
   AppBar _buildAppBar(BuildContext context, AppColors colors) {
+    // Membaca data user untuk inisial (bukan hardcode 'WB' lagi)
+    final currentUser = context.watch<AuthViewModel>().state.user;
+    final initials = currentUser != null ? _getInitials(currentUser.name) : 'U';
+
     return AppBar(
       backgroundColor: colors.surfaceL0,
       elevation: 0,
@@ -125,7 +136,7 @@ class SettingsScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.s),
           ),
           child: Text(
-            'WB',
+            initials, // Menampilkan inisial asli user
             style: AppTypography.textXSSemibold.copyWith(color: Colors.white),
           ),
         ),
@@ -134,6 +145,18 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildProfileCard(BuildContext context, AppColors colors) {
+    // Membaca ViewModel Auth untuk mendapatkan data
+    final authVM = context.watch<AuthViewModel>();
+    final currentUser = authVM.state.user;
+
+    // 1. PERBAIKAN: Baca gambar dari database permanen, BUKAN dari form sementara
+    final imagePath = currentUser?.profilePictureUrl;
+
+    // Fallback data jika null
+    final name = currentUser?.name ?? 'Memuat...';
+    final email = currentUser?.email ?? 'Memuat...';
+    final role = currentUser?.role.name.toUpperCase() ?? 'USER';
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.l),
       decoration: BoxDecoration(
@@ -144,41 +167,61 @@ class SettingsScreen extends StatelessWidget {
       child: Column(
         children: [
           // Avatar dengan Icon Edit
-          Stack(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: colors.backgroundDisabled,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colors.borderPrimary),
-                ),
-                child: Icon(
-                  Icons.person,
-                  size: 50,
-                  color: colors.contentSecondary,
-                ), // Bisa diganti NetworkImage jika ada URL foto
-              ),
-              Positioned(
-                bottom: -4,
-                right: -4,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
+          GestureDetector(
+            onTap: () {
+              // 2. PERBAIKAN: Lempar user ke layar Edit Profile agar ada tombol Simpan
+              context.push('/settings/profile');
+            },
+            child: Stack(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
-                    color: colors.contentBrand,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: colors.surfaceL0, width: 2),
+                    color: colors.backgroundDisabled,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.borderPrimary),
+                    // Tampilkan gambar dari database jika ada
+                    image: imagePath != null
+                        ? DecorationImage(
+                            image: FileImage(File(imagePath)),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                  // Sembunyikan ikon person jika gambar sudah ada
+                  child: imagePath == null
+                      ? Icon(
+                          Icons.person,
+                          size: 50,
+                          color: colors.contentSecondary,
+                        )
+                      : const SizedBox.shrink(),
                 ),
-              ),
-            ],
+                Positioned(
+                  bottom: -4,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: colors.contentBrand,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colors.surfaceL0, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
-          Text('Wayan Budiana', style: AppTypography.headingL),
+          Text(name, style: AppTypography.headingL),
           Text(
-            'admin@example.com',
+            email,
             style: AppTypography.textSRegular.copyWith(
               color: colors.contentSecondary,
             ),
@@ -197,7 +240,7 @@ class SettingsScreen extends StatelessWidget {
                 Icon(Icons.verified, size: 12, color: Colors.teal[800]),
                 const SizedBox(width: 4),
                 Text(
-                  'ADMIN GUDANG',
+                  role,
                   style: AppTypography.textXSSemibold.copyWith(
                     color: Colors.teal[800],
                   ),
