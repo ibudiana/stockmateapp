@@ -64,6 +64,18 @@ class FakeAuthRepository implements AuthRepositoryImpl {
     }
     return Future.value();
   }
+
+  @override
+  Future<List<UserModel>> getAllUsersLocally() {
+    // TODO: implement getAllUsersLocally
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateUserLocally(UserModel user) {
+    // TODO: implement updateUserLocally
+    throw UnimplementedError();
+  }
 }
 
 void main() {

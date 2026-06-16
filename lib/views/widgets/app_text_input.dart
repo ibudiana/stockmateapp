@@ -42,6 +42,8 @@ class AppTextInput extends StatefulWidget {
     String? suffixText,
     Widget? suffixIcon,
     int maxLines = 1,
+    bool obscureText =
+        false, // Tambahan untuk opsi teks biasa yang bisa di-obscure
   }) {
     return AppTextInput._(
       label: label,

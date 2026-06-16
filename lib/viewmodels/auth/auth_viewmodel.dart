@@ -1,6 +1,5 @@
 part of 'auth.dart';
 
-// --- 3. VIEWMODEL UTAMA ---
 class AuthViewModel extends ChangeNotifier {
   final AuthRepositoryImpl repository;
 
@@ -8,6 +7,8 @@ class AuthViewModel extends ChangeNotifier {
   final loginForm = LoginForm();
   final registerForm = RegisterForm();
   final resetPasswordForm = ResetPasswordForm();
+  final changePasswordForm = ChangePasswordForm();
+  final editProfileForm = EditProfileForm();
 
   AuthViewModel({required this.repository});
 
@@ -124,6 +125,98 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    if (!changePasswordForm.validate(_showError)) return false;
+
+    _setState(_state.copyWith(status: AuthStatus.loading, message: null));
+
+    try {
+      // 1. Pastikan ada user yang sedang login dari _state
+      final currentUser = _state.user;
+      if (currentUser == null) {
+        throw Exception('Tidak ada sesi login aktif.');
+      }
+
+      // 2. Verifikasi Password Lama
+      // Asumsi AuthRepositoryImpl memiliki fungsi getAllUsersLocally
+      final userList = await repository.getAllUsersLocally();
+      final userInDb = userList.firstWhere(
+        (u) => u.id == currentUser.id,
+        orElse: () =>
+            throw Exception('Data pengguna tidak ditemukan di sistem.'),
+      );
+
+      if (userInDb.password != oldPassword) {
+        throw Exception('Kata sandi lama yang Anda masukkan salah.');
+      }
+
+      // 3. Simpan Password Baru
+      final updatedUser = userInDb.copyWith(
+        password: newPassword,
+        updatedAt: DateTime.now(),
+      );
+
+      // Update ke SQLite melalui repository
+      await repository.updateUserLocally(updatedUser);
+
+      // Update sesi aktif & kembalikan status authenticated dengan pesan sukses
+      _setState(
+        _state.copyWith(
+          status: AuthStatus.authenticated,
+          user: updatedUser,
+          message: "Kata sandi berhasil diperbarui.",
+        ),
+      );
+      return true; // Berhasil
+    } catch (e) {
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      // Set state ke error agar UI bisa menangkap pesannya
+      _setState(
+        _state.copyWith(status: AuthStatus.error, message: errorMessage),
+      );
+      return false; // Gagal
+    }
+  }
+
+  Future<bool> updateProfile() async {
+    _setState(_state.copyWith(status: AuthStatus.loading, message: null));
+
+    try {
+      final currentUser = _state.user;
+      if (currentUser == null) {
+        throw Exception('Tidak ada sesi login aktif. Silakan login ulang.');
+      }
+
+      // Salin data user lama, dan timpa dengan data baru dari form
+      final updatedUser = currentUser.copyWith(
+        name: editProfileForm.nameController.text.trim(),
+        email: editProfileForm.emailController.text.trim(),
+        // Jika UserModel Anda memiliki field phone, tambahkan:
+        // phone: editProfileForm.phoneController.text.trim(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Simpan ke SQLite menggunakan fungsi yang sama seperti ganti password
+      await repository.updateUserLocally(updatedUser);
+
+      // Perbarui sesi aktif
+      _setState(
+        _state.copyWith(
+          status: AuthStatus.authenticated,
+          user: updatedUser,
+          message: "Profil berhasil diperbarui.",
+        ),
+      );
+      return true; // Berhasil
+    } catch (e) {
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      _setState(
+        _state.copyWith(status: AuthStatus.error, message: errorMessage),
+      );
+      return false; // Gagal
+    }
+  }
+
   void resetState() {
     _setState(const AuthState());
   }
@@ -133,6 +226,7 @@ class AuthViewModel extends ChangeNotifier {
     loginForm.dispose();
     registerForm.dispose();
     resetPasswordForm.dispose();
+    changePasswordForm.dispose();
     super.dispose();
   }
 }

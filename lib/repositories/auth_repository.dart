@@ -12,6 +12,8 @@ abstract class AuthRepository {
 
   Future<UserModel> login(String email, String password);
   Future<void> resetPassword(String email);
+  Future<List<UserModel>> getAllUsersLocally();
+  Future<void> updateUserLocally(UserModel user);
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -99,5 +101,15 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     await firebaseService.resetPassword(email);
+  }
+
+  @override
+  Future<List<UserModel>> getAllUsersLocally() async {
+    return await userDao.getAllUsers();
+  }
+
+  @override
+  Future<void> updateUserLocally(UserModel user) async {
+    await userDao.updateUser(user);
   }
 }

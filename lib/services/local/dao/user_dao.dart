@@ -61,4 +61,22 @@ class UserDao {
       whereArgs: [email],
     );
   }
+
+  // Mengambil semua user dari tabel users
+  Future<List<UserModel>> getAllUsers() async {
+    final db = await _dbService.database;
+    final List<Map<String, dynamic>> maps = await db.query('users');
+    return maps.map((map) => UserModel.fromMap(map)).toList();
+  }
+
+  // Memperbarui record user berdasarkan ID
+  Future<void> updateUser(UserModel user) async {
+    final db = await _dbService.database;
+    await db.update(
+      'users',
+      user.toMap(), // Pastikan UserModel memiliki toMap() atau toJson()
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+  }
 }

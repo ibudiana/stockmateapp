@@ -10,6 +10,8 @@ class SettingsViewModel extends ChangeNotifier {
   bool notifyActivity = false;
   bool methodPush = true;
   bool methodEmail = false;
+  String language = 'id';
+  bool isDarkMode = false;
 
   SettingsViewModel() {
     _loadSettings();
@@ -24,6 +26,8 @@ class SettingsViewModel extends ChangeNotifier {
     notifyActivity = prefs.getBool('notifyActivity') ?? false;
     methodPush = prefs.getBool('methodPush') ?? true;
     methodEmail = prefs.getBool('methodEmail') ?? false;
+    language = prefs.getString('language') ?? 'id';
+    isDarkMode = prefs.getBool('isDarkMode') ?? false;
     notifyListeners();
   }
 
@@ -53,6 +57,14 @@ class SettingsViewModel extends ChangeNotifier {
         break;
       case 'methodEmail':
         methodEmail = value;
+        break;
+      case 'language':
+        language = value as String;
+        await prefs.setString(key, language);
+        break;
+      case 'isDarkMode':
+        isDarkMode = value;
+        await prefs.setBool(key, isDarkMode);
         break;
     }
     notifyListeners();
