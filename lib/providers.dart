@@ -1,5 +1,7 @@
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+import 'package:stockmateapp/repositories/report_repository.dart';
+import 'package:stockmateapp/services/local/dao/report_dao.dart';
 
 import 'package:stockmateapp/services/local/database.dart';
 import 'package:stockmateapp/services/local/dao/user_dao.dart';
@@ -11,6 +13,7 @@ import 'package:stockmateapp/repositories/product_repository.dart';
 
 import 'package:stockmateapp/viewmodels/auth/auth.dart';
 import 'package:stockmateapp/viewmodels/product_viewmodel.dart';
+import 'package:stockmateapp/viewmodels/report_viewmodel.dart';
 
 class AppProviders {
   static List<SingleChildWidget> providers() {
@@ -25,9 +28,9 @@ class AppProviders {
 
       // --- DAO ---
       Provider<UserDao>(create: (_) => UserDao(dbService: dbService)),
-      Provider<ProductDao>(
-        create: (_) => ProductDao(dbService: dbService),
-      ), // DAO Produk
+      Provider<ProductDao>(create: (_) => ProductDao(dbService: dbService)),
+      Provider<ReportDao>(create: (_) => ReportDao(dbService: dbService)),
+
       // --- REPOSITORY ---
       Provider<AuthRepositoryImpl>(
         create: (context) => AuthRepositoryImpl(
@@ -38,7 +41,12 @@ class AppProviders {
       Provider<ProductRepository>(
         create: (context) =>
             ProductRepository(productDao: context.read<ProductDao>()),
-      ), // Repository Produk
+      ),
+      Provider<ReportRepository>(
+        create: (context) =>
+            ReportRepository(reportDao: context.read<ReportDao>()),
+      ),
+
       // --- VIEWMODEL ---
       ChangeNotifierProvider<AuthViewModel>(
         create: (context) =>
@@ -47,7 +55,11 @@ class AppProviders {
       ChangeNotifierProvider<ProductViewModel>(
         create: (context) =>
             ProductViewModel(repository: context.read<ProductRepository>()),
-      ), // ViewModel Produk
+      ),
+      ChangeNotifierProvider<ReportViewModel>(
+        create: (context) =>
+            ReportViewModel(repository: context.read<ReportRepository>()),
+      ),
     ];
   }
 }

@@ -4,7 +4,7 @@ import 'package:stockmateapp/views/screens/screens.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/products',
+    initialLocation: '/reports',
     routes: [
       // --- AUTH ROUTES ---
       GoRoute(
@@ -31,6 +31,10 @@ class AppRouter {
           final product = state.extra as ProductModel?;
           return ProductFormScreen(product: product);
         },
+      ),
+      GoRoute(
+        path: '/reports',
+        builder: (context, state) => const ReportScreen(),
       ),
     ],
   );

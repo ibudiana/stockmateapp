@@ -18,7 +18,7 @@ class AppBottomNavBar extends StatelessWidget {
         context.go('/products'); // Rute Item / Produk
         break;
       case 2:
-        // context.go('/reports'); // Rute Report
+        context.go('/reports'); // Rute Report
         break;
       case 3:
         // context.go('/settings'); // Rute Setting
