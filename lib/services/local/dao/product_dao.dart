@@ -76,8 +76,9 @@ class ProductDao {
 
         // 2. Looping untuk memotong sisa stok per batch
         for (var batch in batches) {
-          if (qtyToDeduct <= 0)
+          if (qtyToDeduct <= 0) {
             break; // Jika sudah terpenuhi, hentikan pemotongan
+          }
 
           double remainingInBatch = (batch['remaining_quantity'] as num)
               .toDouble();

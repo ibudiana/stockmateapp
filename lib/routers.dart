@@ -4,16 +4,18 @@ import 'package:provider/provider.dart';
 import 'package:stockmateapp/models/product_model.dart';
 import 'package:stockmateapp/utils/helpers/session_service.dart';
 import 'package:stockmateapp/viewmodels/auth/auth.dart';
+import 'package:stockmateapp/viewmodels/settings_viewmodel.dart';
 import 'package:stockmateapp/views/screens/screens.dart';
 
 class AppRouter {
   // Ubah menjadi fungsi yang menerima context agar bisa membaca AuthViewModel
   static GoRouter createRouter(BuildContext context) {
     final authViewModel = context.read<AuthViewModel>();
+    final settingsViewModel = context.read<SettingsViewModel>();
 
     return GoRouter(
       initialLocation: '/home',
-      refreshListenable: authViewModel,
+      refreshListenable: Listenable.merge([authViewModel, settingsViewModel]),
       redirect: (context, state) {
         // Cek sesi secara instan menggunakan SessionService
         final loggedIn = SessionService.isLoggedInSync;

@@ -455,7 +455,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                   ),
                                   const SizedBox(width: AppSpacing.s),
                                   Text(
-                                    'Batch $index: Sisa ${batch.remainingQuantity}',
+                                    'Batch $index: Sisa ${batch.remainingQuantity.toInt()}',
                                     style: AppTypography.textMSemibold,
                                   ),
                                 ],

@@ -193,16 +193,100 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                           ),
                           const SizedBox(height: AppSpacing.m),
 
-                          AppTextInput.text(
-                            label: 'Satuan',
-                            hint: 'Kilogram (kg)',
-                            controller: viewModel.productForm.unitController,
-                            suffixIcon: const Icon(
-                              Icons.keyboard_arrow_down,
-                              size: 20,
-                            ),
-                            validator: (v) =>
-                                v!.isEmpty ? 'Satuan wajib diisi' : null,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Satuan',
+                                style: AppTypography.textSRegular.copyWith(
+                                  color: colors.contentSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              DropdownButtonFormField<String>(
+                                value: () {
+                                  final currentText = viewModel
+                                      .productForm
+                                      .unitController
+                                      .text
+                                      .trim();
+                                  if (currentText.isEmpty) return null;
+
+                                  final availableUnits = [
+                                    'Kg',
+                                    'Pcs',
+                                    'Liter',
+                                    'Kotak',
+                                    'Bks',
+                                    'Lusin',
+                                    'Gram',
+                                  ];
+
+                                  // Cari satuan yang cocok mengabaikan huruf besar/kecil
+                                  for (var unit in availableUnits) {
+                                    if (unit.toLowerCase() ==
+                                        currentText.toLowerCase()) {
+                                      return unit; // Kembalikan nilai yang ada di daftar
+                                    }
+                                  }
+
+                                  // Jika sama sekali tidak ada di daftar, kita tetap masukkan ke UI
+                                  // agar tidak crash, tapi berikan peringatan untuk diedit
+                                  return null;
+                                }(),
+                                decoration: InputDecoration(
+                                  hintText: 'Pilih Satuan',
+                                  hintStyle: AppTypography.textMRegular
+                                      .copyWith(color: colors.contentSecondary),
+                                  filled: true,
+                                  fillColor: colors.backgroundDisabled,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.m,
+                                    ),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: colors.contentPrimary,
+                                ),
+                                // Pastikan items di sini SAMA PERSIS dengan availableUnits di atas
+                                items:
+                                    [
+                                          'Kg',
+                                          'Pcs',
+                                          'Liter',
+                                          'Kotak',
+                                          'Bks',
+                                          'Lusin',
+                                          'Gram',
+                                        ]
+                                        .map(
+                                          (unit) => DropdownMenuItem(
+                                            value: unit,
+                                            child: Text(
+                                              unit,
+                                              style: AppTypography.textMRegular,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    viewModel.productForm.unitController.text =
+                                        val;
+                                  }
+                                },
+                                validator: (v) => v == null || v.isEmpty
+                                    ? 'Satuan wajib diisi'
+                                    : null,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: AppSpacing.m),
 

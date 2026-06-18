@@ -12,6 +12,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<DashboardViewModel>().loadDashboardData();
     });
   }
@@ -102,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       value: viewModel.lowStockCount.toString(),
                       suffix: 'SKU',
                       icon: Icons.warning_amber_rounded,
-                      accentColor: Colors.teal,
+                      accentColor: colors.backgroundPositive,
                       colors: colors,
                     ),
                     const SizedBox(height: AppSpacing.s),
@@ -111,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       value: viewModel.outOfStockCount.toString(),
                       suffix: 'SKU',
                       icon: Icons.error_outline,
-                      accentColor: Colors.red,
+                      accentColor: colors.backgroundNegative,
                       colors: colors,
                     ),
                   ],
@@ -145,12 +146,21 @@ class _HomeScreenState extends State<HomeScreen> {
 class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _HomeAppBar();
 
+  String _getInitials(String name) {
+    List<String> names = name.trim().split(" ");
+    if (names.isEmpty) return "U"; // Default 'User'
+    if (names.length == 1) return names[0][0].toUpperCase();
+    return "${names[0][0]}${names[1][0]}".toUpperCase();
+  }
+
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>() ?? AppColors.light;
+    final currentUser = context.watch<AuthViewModel>().state.user;
+    final initials = currentUser != null ? _getInitials(currentUser.name) : 'U';
 
     return AppBar(
       backgroundColor: colors.surfaceL0,
@@ -216,7 +226,7 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             borderRadius: BorderRadius.circular(AppRadius.s),
           ),
           child: Text(
-            'WB',
+            initials, // Menampilkan inisial asli user
             style: AppTypography.textXSSemibold.copyWith(color: Colors.white),
           ),
         ),
@@ -327,6 +337,7 @@ class _TrendChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Kalkulasi nilai Y tertinggi agar chart tidak mentok di atap
     double maxY = 10;
     for (var spot in viewModel.trendInSpots) {
       if (spot.y > maxY) maxY = spot.y;
@@ -341,30 +352,108 @@ class _TrendChartCard extends StatelessWidget {
         color: colors.surfaceL0,
         borderRadius: BorderRadius.circular(AppRadius.m),
         border: Border.all(color: colors.borderPrimary),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // --- HEADER GRAFIK ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Tren Inventaris', style: AppTypography.headingM),
-              Row(
-                children: [
-                  Text('7 Hari Terakhir', style: AppTypography.textXSSemibold),
-                  const Icon(Icons.keyboard_arrow_down, size: 16),
-                ],
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.backgroundDisabled,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      '7 Hari Terakhir',
+                      style: AppTypography.textXSSemibold,
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.keyboard_arrow_down, size: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.m),
+
+          // --- LEGENDA (Keterangan Garis) ---
+          Row(
+            children: [
+              _buildLegend(color: colors.contentBrand, text: 'Barang Masuk'),
+              const SizedBox(width: AppSpacing.l),
+              _buildLegend(
+                color: colors.backgroundNegative,
+                text: 'Barang Keluar',
+                isDashed: true,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
+
+          // --- AREA GRAFIK ---
           SizedBox(
-            height: 150,
+            height: 180, // Sedikit ditinggikan agar lebih proporsional
             child: LineChart(
+              key: ValueKey(
+                viewModel.trendInSpots.length + viewModel.trendOutSpots.length,
+              ),
               LineChartData(
                 minY: 0,
                 maxY: maxY + (maxY * 0.2),
-                gridData: const FlGridData(show: false),
+
+                // 1. TOOLTIP SAAT DITEKAN
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) =>
+                        colors.surfaceL0.withOpacity(0.9),
+                    tooltipBorder: BorderSide(color: colors.borderPrimary),
+                    tooltipBorderRadius: BorderRadius.circular(8),
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        return LineTooltipItem(
+                          '${spot.y.toInt()} Item\n',
+                          AppTypography.textXSSemibold.copyWith(
+                            color: spot.barIndex == 0
+                                ? colors.backgroundPositive
+                                : colors.backgroundNegative,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+
+                // 2. GARIS BANTU HORIZONTAL (Biar estetik)
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: maxY > 50 ? (maxY / 4) : 10,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: colors.borderPrimary.withOpacity(0.5),
+                      strokeWidth: 1,
+                      dashArray: [5, 5],
+                    );
+                  },
+                ),
+
+                // 3. LABEL SUMBU X & Y
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
@@ -378,15 +467,19 @@ class _TrendChartCard extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 22,
+                      reservedSize: 28,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
                         int index = value.toInt();
                         if (index >= 0 &&
                             index < viewModel.last7DaysLabels.length) {
-                          return Text(
-                            viewModel.last7DaysLabels[index],
-                            style: AppTypography.textXSRegular.copyWith(
-                              color: colors.contentSecondary,
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              viewModel.last7DaysLabels[index],
+                              style: AppTypography.textXSRegular.copyWith(
+                                color: colors.contentSecondary,
+                              ),
                             ),
                           );
                         }
@@ -396,32 +489,101 @@ class _TrendChartCard extends StatelessWidget {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
+
+                // 4. GARIS DATA
                 lineBarsData: [
+                  // Garis Barang Masuk (Dengan Efek Gradien Biru)
                   LineChartBarData(
                     spots: viewModel.trendInSpots,
                     isCurved: true,
-                    color: colors.contentBrand,
+                    color: colors.backgroundPositive,
                     barWidth: 3,
                     isStrokeCapRound: true,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) =>
+                          FlDotCirclePainter(
+                            radius: 4,
+                            color: colors.surfaceL0,
+                            strokeWidth: 2,
+                            strokeColor: colors.backgroundPositive,
+                          ),
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          colors.backgroundPositive.withOpacity(0.3),
+                          colors.backgroundPositive.withOpacity(0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
                   ),
+
+                  // Garis Barang Keluar (Putus-putus)
                   LineChartBarData(
                     spots: viewModel.trendOutSpots,
                     isCurved: true,
-                    color: Colors.teal,
+                    color: colors.backgroundNegative,
                     barWidth: 2,
                     isStrokeCapRound: true,
                     dashArray: [5, 5],
-                    dotData: const FlDotData(show: false),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) =>
+                          FlDotCirclePainter(
+                            radius: 3,
+                            color: colors.surfaceL0,
+                            strokeWidth: 2,
+                            strokeColor: colors.backgroundNegative,
+                          ),
+                    ),
                     belowBarData: BarAreaData(show: false),
                   ),
                 ],
               ),
+
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // Helper untuk membuat legenda dengan mudah
+  Widget _buildLegend({
+    required Color color,
+    required String text,
+    bool isDashed = false,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 3,
+          decoration: BoxDecoration(
+            color: isDashed ? Colors.transparent : color,
+          ),
+          child: isDashed
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(
+                    3,
+                    (index) => Container(width: 4, color: color),
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: AppTypography.textXSRegular.copyWith(color: Colors.grey[700]),
+        ),
+      ],
     );
   }
 }
@@ -490,49 +652,63 @@ class _HealthStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // KITA BUNGKUS DENGAN 2 CONTAINER AGAR BISA MEMILIKI RADIUS DAN BORDER KIRI
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.l),
+      clipBehavior: Clip.hardEdge, // Memaksa sudut agar bisa melengkung
       decoration: BoxDecoration(
         color: colors.surfaceL0,
-        border: Border(
-          left: BorderSide(color: accentColor, width: 4),
-          top: BorderSide(color: colors.borderPrimary),
-          right: BorderSide(color: colors.borderPrimary),
-          bottom: BorderSide(color: colors.borderPrimary),
-        ),
+        borderRadius: BorderRadius.circular(
+          AppRadius.m,
+        ), // <--- INI YANG MEMBUATNYA ROUNDED
+        border: Border.all(color: colors.borderPrimary),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AppTypography.textXSSemibold.copyWith(
-                  color: colors.contentSecondary,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: accentColor,
+              width: 4,
+            ), // Garis tebal di kiri
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.textXSSemibold.copyWith(
+                    color: colors.contentSecondary,
+                  ),
                 ),
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(value, style: AppTypography.headingXL),
-                  const SizedBox(width: 4),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text(
-                      suffix,
-                      style: AppTypography.textSRegular.copyWith(
-                        color: colors.contentSecondary,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(value, style: AppTypography.headingXL),
+                    const SizedBox(width: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        suffix,
+                        style: AppTypography.textSRegular.copyWith(
+                          color: colors.contentSecondary,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Icon(icon, color: colors.contentSecondary.withOpacity(0.3), size: 48),
-        ],
+                  ],
+                ),
+              ],
+            ),
+            Icon(
+              icon,
+              color: colors.contentSecondary.withOpacity(0.3),
+              size: 48,
+            ),
+          ],
+        ),
       ),
     );
   }

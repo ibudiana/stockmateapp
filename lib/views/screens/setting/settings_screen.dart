@@ -83,6 +83,60 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
+            // ==========================================
+            // --- ALAT PENGEMBANG (DEV TOOLS) ---
+            // ==========================================
+            _buildSectionHeader('ALAT PENGEMBANG', colors),
+            Container(
+              decoration: BoxDecoration(
+                color: colors.surfaceL0,
+                borderRadius: BorderRadius.circular(AppRadius.m),
+                border: Border.all(color: colors.borderPrimary),
+              ),
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    title: 'Suntik Data Dummy (Seed)',
+                    subtitle: 'Otomatis masukkan produk & transaksi awal',
+                    icon: Icons.data_usage,
+                    colors: colors,
+                    onTap: () async {
+                      try {
+                        // 1. Panggil fungsi seeder
+                        final dbService = context.read<DatabaseService>();
+                        dbService.seedInitialData();
+
+                        // 2. Refresh semua state agar UI langsung berubah tanpa perlu restart
+                        if (context.mounted) {
+                          context.read<ProductViewModel>().fetchProducts();
+                          context
+                              .read<DashboardViewModel>()
+                              .loadDashboardData();
+                          context
+                              .read<NotificationViewModel>()
+                              .generateNotifications();
+                          context
+                              .read<ReportViewModel>()
+                              .fetchReport(); // Jika Anda pakai ReportVM
+
+                          AppSnackbar.showSuccess(
+                            context,
+                            message: 'Data Dummy berhasil ditambahkan!',
+                          );
+                        }
+                      } catch (e) {
+                        AppSnackbar.showError(
+                          context,
+                          message: 'Gagal suntik data: $e',
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
             // --- LOGOUT ---
             AppButton.secondary(
               text: 'Keluar dari Akun',

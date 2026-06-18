@@ -45,7 +45,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         context,
         message: authVM.state.message ?? 'Profil berhasil diperbarui!',
       );
-      Navigator.pop(context);
+      context.push("/settings");
     } else if (mounted) {
       AppSnackbar.showError(
         context,

@@ -69,11 +69,12 @@ class DashboardViewModel extends ChangeNotifier {
     totalTransactions = allReport.length;
 
     // 4. Kalkulasi Grafik 7 Hari Terakhir
-    trendInSpots.clear();
-    trendOutSpots.clear();
-    last7DaysLabels.clear();
-
     const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+    // BUAT KERANJANG SEMENTARA
+    List<FlSpot> tempInSpots = [];
+    List<FlSpot> tempOutSpots = [];
+    List<String> tempLabels = [];
 
     // Loop mundur dari 6 hari yang lalu sampai hari ini (0)
     for (int i = 6; i >= 0; i--) {
@@ -92,12 +93,17 @@ class DashboardViewModel extends ChangeNotifier {
 
       // X-axis dimulai dari 0 sampai 6
       double xAxis = (6 - i).toDouble();
-      trendInSpots.add(FlSpot(xAxis, dIn));
-      trendOutSpots.add(FlSpot(xAxis, dOut));
 
-      // Simpan nama hari untuk label sumbu X
-      last7DaysLabels.add(days[targetDate.weekday - 1]);
+      // MASUKKAN KE KERANJANG SEMENTARA
+      tempInSpots.add(FlSpot(xAxis, dIn));
+      tempOutSpots.add(FlSpot(xAxis, dOut));
+      tempLabels.add(days[targetDate.weekday - 1]);
     }
+
+    // SETELAH LOOP SELESAI SEMPURNA, BARU TIMPA VARIABEL UTAMA
+    trendInSpots = tempInSpots;
+    trendOutSpots = tempOutSpots;
+    last7DaysLabels = tempLabels;
 
     isLoading = false;
     notifyListeners();

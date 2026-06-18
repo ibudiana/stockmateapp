@@ -7,6 +7,7 @@ import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:stockmateapp/models/product_model.dart';
 import 'package:stockmateapp/models/stock_transaction_model.dart';
 import 'package:stockmateapp/models/transaction_detail_model.dart';
+import 'package:stockmateapp/services/local/database.dart';
 import 'package:stockmateapp/utils/forms/forms.dart';
 import 'package:stockmateapp/viewmodels/auth/auth.dart';
 import 'package:stockmateapp/utils/theme/app_colors.dart';
